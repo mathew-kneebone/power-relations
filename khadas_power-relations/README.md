@@ -1,4 +1,4 @@
-Khadas Setup for Power Relations
+**KHADAS SETUP FOR POWER RELATIONS**
 
 **Fresh Install Procedure (Khadas):**
 1.  Insert the MicroSD card with the Krescue image burned onto it
@@ -18,7 +18,7 @@ sudo apt install python3-pip
 ```
 git clone https://github.com/frank180/RPi.GPIO-Khadas.git
 ```
-6.  Navigate to the directory where the files were cloned, likely Desktop/Rpi.GPIO-Khadas
+6.  Navigate to the directory where the files were cloned (likely Desktop/Rpi.GPIO-Khadas)
 7.  Type:
 ```
 sudo python setup.py build install
