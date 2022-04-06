@@ -14,7 +14,10 @@ Khadas Setup for Power Relations
 sudo apt install python3-pip
 ```
 4.  Install Rpi.GPIO library by git cloning the library for Khadas (https://github.com/frank180/RPi.GPIO-Khadas)
-5.  Type git clone https://github.com/frank180/RPi.GPIO-Khadas.git
+5.  Type:
+```
+git clone https://github.com/frank180/RPi.GPIO-Khadas.git
+```
 6.  Navigate to the directory where the files were cloned, likely Desktop/Rpi.GPIO-Khadas
 7.  Type:
 ```
