@@ -1,0 +1,1 @@
+#Khadas Setup for Power Relations
