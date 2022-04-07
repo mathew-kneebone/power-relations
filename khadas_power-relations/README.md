@@ -1,7 +1,7 @@
 **KHADAS SETUP FOR POWER RELATIONS**
 
 **Fresh Install Procedure (Khadas):**
-1.  Insert the MicroSD card with the Krescue image burned onto it (https://dl.khadas.com/Firmware/Krescue/images/)
+1.  Insert the MicroSD card with the Krescue image burned onto it (https://dl.khadas.com/Firmware/Krescue/images/) using rufus, dd, or etcher
 2.  Reset Khadas Vim3 into Krescue environment by quickly pressing the middle button on the side 3 times
 3.  Once booted into Krescue environment, then format EMMC memory
 4.  Burn Ubuntu 4.9 EMMC to the Khadas Vim3
