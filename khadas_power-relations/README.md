@@ -1,4 +1,4 @@
-**KHADAS SETUP FOR POWER RELATIONS**
+**KHADAS VIM 3 SETUP FOR POWER RELATIONS**
 
 **Fresh Install Procedure (Khadas):**
 1.  Insert the MicroSD card with the Krescue image burned onto it (https://dl.khadas.com/Firmware/Krescue/images/) using rufus, dd, or etcher
