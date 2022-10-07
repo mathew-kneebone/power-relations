@@ -4,3 +4,7 @@ Khadas Vim 3 setup/config instructions and code for datascraping and power switc
 
 **rpi_power-relations**</br>
 Raspberry Pi 3B+ setup/config instructions and code for datascraping and power switching for Power Relations.
+
+**poweroutage.us key**</br>
+Access to live outage data provided through poweroutage.us via REST API. Authentication key is:</br>
+I-S74F3NALDJFJ
