@@ -8,5 +8,5 @@ Raspberry Pi 3B+ setup/config instructions and code for datascraping and power s
 **poweroutage.us key**</br>
 Access to live outage data provided through poweroutage.us via REST API. Authentication key is:</br>
 ```
-I-S74F3NALDJFJ
+MKB0894!23h!fGF983
 ```
