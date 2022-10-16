@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-from datetime import datetime
-import time
-import sys
+import argparse
+import socket
+from time import sleep
+
+import RPi.GPIO as GPIO
 
 def test_threshold(county_dict, thresh):
     """ given a dict of county data, return True if any county with 
@@ -12,17 +14,19 @@ def test_threshold(county_dict, thresh):
             return True
     return False
 
+
 def print_formatted(county_dict, thresh, codes, counties_per_line):
     """Given county outage data in a dict, format and print it. """
     outline = ""
     county_count = 0
-    for key in county_dict:
+
+    for key, val in  sorted(county_dict.items(), key = lambda x:x[0]):
         try:
             ccode = codes[key]
         except KeyError: # if county not in code dict, uppercase first 3 char
-            ccode = key.upper()[0:3] 
+            ccode = key.upper()[0:3]
         # format county item as code followed by percent outage
-        item = "{:} ({:2.1f}%)".format(ccode, 100*county_dict[key])
+        item = "{:} ({:2.1f}%)".format(ccode, 100*val)
         if county_dict[key] > thresh:
             # above threshold, add ANSI escape codes for red terminal text
             item = "\033[31;1;4m" + item + "\033[0m"
@@ -32,6 +36,9 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
             print(outline)
             outline = ""
             county_count = 0
+    # BUGFIX: add this line here
+    print(outline)
+
 
 def get_data(url):
     """scrape outatage data from given url, return as list and county dict"""
@@ -81,6 +88,29 @@ def print_customers(text):
             print(line)
         if line[0:10] == "Last Updat":
             print(line)
+
+
+def checkForConnection(host, portNo):
+    """
+    Description:
+        Checks to see if there is a connection to the specified website
+    Inputs:
+        host - The name or IP address of the server to test a connection to
+        portNo - The port number to use for the connection
+    Return:
+        Boolean - True if connection was successful
+    """
+    success = True
+
+    # Try and connect to the server, timeout after 2 seconds
+    try:
+        s = socket.create_connection((host, portNo), 2)
+        s.close()
+    # An exception will be raised if the connection fails
+    except:
+        success = False
+
+    return success
 
 county_codes = {
     "Alameda": "ALA",
@@ -138,30 +168,69 @@ county_codes = {
 
 
 #### Everything happens here
+if __name__ == '__main__':
+    # 380 is Texas, 760 is PG&E
+    url = "https://poweroutage.us/area/utility/760"
+    # print this many counties per line
+    counties_per_line = 5
+    # use this threshold for outages
+    thresh = 0.1   
+    raspPi = False
 
-# 380 is Texas, 760 is PG&E
-url = "https://poweroutage.us/area/utility/760"
-# print this many counties per line
-counties_per_line = 5
-# use this threshold for outages
-thresh = 0.01   
+    # Set up path arguement
+    parser = argparse.ArgumentParser(description='Arguments for runtime')
+    parser.add_argument('--t', help='Threshold to be used', type=float, required=False)
+    args = parser.parse_args()
 
+    while not checkForConnection('www.google.com', '80'):
+        # Sleep for 5 seconds
+        sleep(5)
 
-# extract the data from the urls
-county_dict, text = get_data(url)
+    if args.t:
+        thresh = args.t
 
-# print the top decoration text
-print_customers(text)
+    if raspPi:
+        RELAY = 18 # BCM 18, GPIO.1 physical pin 12
+    else:
+        RELAY = 37
 
-# print the formatted county data
-print("\n\nCounty Outages:")
-print_formatted(county_dict, thresh, county_codes, counties_per_line)
-print("\n\n")
+    # Relay is connected NORMALLY CLOSED so gpio.cleanup() leaves it SET.
+    # set RELAY TRUE to TURN OFF
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(RELAY,GPIO.OUT)
+    # power on on startup
+    GPIO.output(RELAY, GPIO.LOW)
 
+    try:
+        while True:
+            # extract the data from the urls
+            county_dict, text = get_data(url)
 
-if test_threshold(county_dict, thresh):
-    print("   **POWER OFF** (ABOVE THRESHOLD)")
-    # set the GPIO to turn the power off here
-else:
-    print("   **POWER ON** (BELOW THRESHOLD)")
-    # set the GPIO to turn the power on here
+            # print the top decoration text
+            print_customers(text)
+
+            # print the formatted county data
+            print("\n\nCounty Outages:")
+            print_formatted(county_dict, thresh, county_codes, counties_per_line)
+            print("\n\n")
+
+            if test_threshold(county_dict, thresh):
+                print("   **POWER OFF** (ABOVE THRESHOLD)")
+                # set the GPIO to turn the power off here
+                GPIO.output(RELAY, GPIO.HIGH)
+            else:
+                print("   **POWER ON** (BELOW THRESHOLD)")
+                # set the GPIO to turn the power on here
+                GPIO.output(RELAY, GPIO.LOW)
+            sleep(300.0)
+
+    except KeyboardInterrupt:
+        print("interrupted")
+
+    try:
+        GPIO.cleanup()               # clean up after yourself
+    except RuntimeWarning:
+        print('Caught warning')
+
+    exit(0)

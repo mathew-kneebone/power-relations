@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from datetime import datetime
-from colorama import init, Fore, Style 
+from colorama import init, Fore, Style
 import time
 from time import sleep
 import sys
@@ -9,7 +9,7 @@ import argparse
 import socket
 import RPi.GPIO as GPIO
 
-fileName = 'my_log.txt'
+fileName = 'power-relations_log.txt'
 
 def test_threshold(county_dict, thresh):
     """ given a dict of county data, return True if any county with 

@@ -22,7 +22,7 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
         try:
             ccode = codes[key]
         except KeyError: # if county not in code dict, uppercase first 3 char
-            ccode = key.upper()[0:3] 
+            ccode = key.upper()[0:3]
         # format county item as code followed by percent outage
         item = "{:} ({:2.1f}%)".format(ccode, 100*val)
         if county_dict[key] > thresh:
@@ -34,6 +34,7 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
             print(outline)
             outline = ""
             county_count = 0
+    # BUGFIX: add this line here
     print(outline)
 
 
@@ -47,8 +48,6 @@ def get_data(api_url):
 
     response = requests.get(api_url)
     # might want to check for response == 200 here but YOLO
-
-    
 
     data_dict = {}
     for resp_dict in response.json():
@@ -72,7 +71,6 @@ def print_customers(utl_url):
     print("Customers: {}".format(rj['CustomersTracked']))
     print("Utility Outages: {}".format(rj['CustomersOut']))
     print("Last Updated Time: {}".format(rj['LastUpdatedDateTime']))
-
 
 county_codes = {
     "Alameda": "ALA",
@@ -152,17 +150,13 @@ authkey = authkey.strip()
 # texas is utility 380, PGE is utility 760
 api_url="https://poweroutage.us/api/json_v1.6/countybyutility?key={}&utilityid=760".format(authkey)
 
-
 # create utility info URL from authkey
 utl_url="https://poweroutage.us/api/json_v1.6/utility?key={}&utilityid=760".format(authkey)
-
-
 
 # print this many counties per line
 counties_per_line = 5
 # use this threshold for outages
-thresh = 0.01   
-
+thresh = 0.1  
 
 # extract the data from the urls
 county_dict = get_data(api_url)
