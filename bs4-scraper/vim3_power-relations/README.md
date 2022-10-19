@@ -34,7 +34,10 @@ sudo apt-get install python3-rpi.gpio
 sudo apt-get install python3-bs4
 ```
 10. Set the Script to Run
-11. On the command line or in the terminal type sudo nano /home/khadas/.bashrc
+11. On the command line or in the terminal type:
+```
+sudo nano /home/khadas/.bashrc
+```
 12. Scroll to the bottom of the file and type:
 ```
 python3 /home/khadas/script.py --p /home/khadas --t 350
