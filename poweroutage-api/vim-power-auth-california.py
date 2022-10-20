@@ -8,11 +8,11 @@ import sys
 import argparse
 import socket
 
-# set this true to use Rpi hardware
-USE_PI = False
+# this true to use Vim hardware
+USE_VIM = False
 
 
-if USE_PI:
+if USE_VIM:
     import RPi.GPIO as GPIO
 
 
@@ -209,16 +209,33 @@ if __name__ == '__main__':
         sleep(5)
 
     if args.t:
+        print("Using new threshold {}".format(args.t))
         thresh = args.t
 
     if args.p:
         path = args.p
 
-    if USE_PI:
-        RELAY = 18 # BCM 18, GPIO.1 physical pin 12
+    print("Using threshold {}".format(thresh))
+
+        
+    if USE_VIM:
+
+
+        # for RasPi:
+        #RELAY = 18 # BCM 18, GPIO.1 physical pin 12
+
+        # for VIM
+        RELAY = 37
+
+        # Relay is connected NORMALLY CLOSED so gpio.cleanup() leaves it SET.
+        # set RELAY TRUE to TURN OFF
         GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
         GPIO.setup(RELAY,GPIO.OUT)
-        GPIO.output(RELAY,GPIO.LOW)
+        # power on on startup
+        GPIO.output(RELAY, GPIO.LOW)
+
+
 
     try:
         while True:
@@ -230,17 +247,21 @@ if __name__ == '__main__':
 
             if test_threshold(county_dict, thresh):
                 print_and_log("**POWER OFF** (ABOVE THRESHOLD)")
-                if USE_PI:
+                if USE_VIM:
                     GPIO.output(RELAY, GPIO.HIGH)
             else:
                 print_and_log("**POWER ON** (BELOW THRESHOLD)")
-                if USE_PI:
+                if USE_VIM:
                     GPIO.output(RELAY, GPIO.LOW)
             sleep(300.0)
 
     except KeyboardInterrupt:
         print_and_log("interrupted")
 
-    if USE_PI:
-        GPIO.cleanup()
+    if USE_VIM:
+        try:
+            GPIO.cleanup()               # clean up after yourself
+        except RuntimeWarning:
+            print('Caught warning')
+            
     exit(0)
