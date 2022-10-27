@@ -44,16 +44,22 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
     county_count = 0
 
     for key, val in sorted(county_dict.items(), key = lambda x:x[0]):
+        # for testing: val = 100*val
         try:
             ccode = codes[key]
         except KeyError: # if county not in code dict, uppercase first 3 char
             ccode = key.upper()[0:3]
         # format county item as code followed by percent outage
-        item = "{:} ({:2.1f}%)".format(ccode, 100*val)
+        #item = "{:} ({:4.1f}%)".format(ccode, 100*val)
+        item = "{:} ({:3.1f}%)".format(ccode, 100*val)
         if county_dict[key] > thresh:
             # above threshold, add ANSI escape codes for red terminal text
             item = Fore.RED + item + Style.RESET_ALL
-        outline += item + "  "
+        # if more than 10% outage, only print one space so things line up
+        if val >= 0.1:
+            outline += item + " "
+        else:
+            outline += item + "  "
         county_count += 1
         if county_count > counties_per_line:
             print_and_log(outline)
@@ -152,10 +158,10 @@ county_codes = {
     "Trinity": "TRI",
     "Tulare": "TUL",
     "Tuolumne": "TUO",
-    "Unknown": "UNK",
     "Ventura": "VEN",
     "Yolo": "YOL",
     "Yuba": "YUB" }
+#    "Unknown": "UNK",
 
 #### Everything happens here
 if __name__ == '__main__':

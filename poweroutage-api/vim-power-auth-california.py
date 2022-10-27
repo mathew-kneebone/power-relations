@@ -49,11 +49,14 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
         except KeyError: # if county not in code dict, uppercase first 3 char
             ccode = key.upper()[0:3]
         # format county item as code followed by percent outage
-        item = "{:} ({:2.1f}%)".format(ccode, 100*val)
+        item = "{:} ({:3.1f}%)".format(ccode, 100*val)
         if county_dict[key] > thresh:
             # above threshold, add ANSI escape codes for red terminal text
             item = Fore.RED + item + Style.RESET_ALL
-        outline += item + "  "
+        if val >= 0.1:
+            outline += item + " "
+        else:
+            outline += item + "  "
         county_count += 1
         if county_count > counties_per_line:
             print_and_log(outline)
