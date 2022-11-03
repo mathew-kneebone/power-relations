@@ -1,7 +1,9 @@
 **KHADAS VIM 3 SETUP FOR POWER RELATIONS**
 
 **Version Originally Implemented at Rib Sep 2021**
+```
 210924_vim3-power-relations-california.py
+```
 
 **Fresh Install Procedure (Khadas):**
 1.  Insert the MicroSD card with the Krescue image burned onto it (https://dl.khadas.com/Firmware/Krescue/images/) using rufus, dd, or etcher
