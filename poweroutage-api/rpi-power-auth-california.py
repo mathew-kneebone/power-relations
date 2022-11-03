@@ -9,7 +9,7 @@ import argparse
 import socket
 
 # set this true to use Rpi hardware
-USE_PI = False
+USE_PI = True
 
 
 if USE_PI:
