@@ -9,7 +9,7 @@ import argparse
 import socket
 
 # this true to use Vim hardware
-USE_VIM = False
+USE_VIM = True
 
 
 if USE_VIM:
