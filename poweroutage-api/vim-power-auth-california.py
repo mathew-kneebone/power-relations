@@ -8,11 +8,11 @@ import sys
 import argparse
 import socket
 
-# set this true to use Rpi hardware
-USE_PI = False
+# this true to use Vim hardware
+USE_VIM = True
 
 
-if USE_PI:
+if USE_VIM:
     import RPi.GPIO as GPIO
 
 
@@ -44,18 +44,15 @@ def print_formatted(county_dict, thresh, codes, counties_per_line):
     county_count = 0
 
     for key, val in sorted(county_dict.items(), key = lambda x:x[0]):
-        # for testing: val = 100*val
         try:
             ccode = codes[key]
         except KeyError: # if county not in code dict, uppercase first 3 char
             ccode = key.upper()[0:3]
         # format county item as code followed by percent outage
-        #item = "{:} ({:4.1f}%)".format(ccode, 100*val)
         item = "{:} ({:3.1f}%)".format(ccode, 100*val)
         if county_dict[key] > thresh:
             # above threshold, add ANSI escape codes for red terminal text
             item = Fore.RED + item + Style.RESET_ALL
-        # if more than 10% outage, only print one space so things line up
         if val >= 0.1:
             outline += item + " "
         else:
@@ -158,10 +155,10 @@ county_codes = {
     "Trinity": "TRI",
     "Tulare": "TUL",
     "Tuolumne": "TUO",
+    "Unknown": "UNK",
     "Ventura": "VEN",
     "Yolo": "YOL",
     "Yuba": "YUB" }
-#    "Unknown": "UNK",
 
 #### Everything happens here
 if __name__ == '__main__':
@@ -215,16 +212,33 @@ if __name__ == '__main__':
         sleep(5)
 
     if args.t:
+        print("Using new threshold {}".format(args.t))
         thresh = args.t
 
     if args.p:
         path = args.p
 
-    if USE_PI:
-        RELAY = 18 # BCM 18, GPIO.1 physical pin 12
+    print("Using threshold {}".format(thresh))
+
+        
+    if USE_VIM:
+
+
+        # for RasPi:
+        #RELAY = 18 # BCM 18, GPIO.1 physical pin 12
+
+        # for VIM
+        RELAY = 37
+
+        # Relay is connected NORMALLY CLOSED so gpio.cleanup() leaves it SET.
+        # set RELAY TRUE to TURN OFF
         GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
         GPIO.setup(RELAY,GPIO.OUT)
-        GPIO.output(RELAY,GPIO.LOW)
+        # power on on startup
+        GPIO.output(RELAY, GPIO.LOW)
+
+
 
     try:
         while True:
@@ -236,17 +250,21 @@ if __name__ == '__main__':
 
             if test_threshold(county_dict, thresh):
                 print_and_log("**POWER OFF** (ABOVE THRESHOLD)")
-                if USE_PI:
+                if USE_VIM:
                     GPIO.output(RELAY, GPIO.HIGH)
             else:
                 print_and_log("**POWER ON** (BELOW THRESHOLD)")
-                if USE_PI:
+                if USE_VIM:
                     GPIO.output(RELAY, GPIO.LOW)
             sleep(300.0)
 
     except KeyboardInterrupt:
         print_and_log("interrupted")
 
-    if USE_PI:
-        GPIO.cleanup()
+    if USE_VIM:
+        try:
+            GPIO.cleanup()               # clean up after yourself
+        except RuntimeWarning:
+            print('Caught warning')
+            
     exit(0)
