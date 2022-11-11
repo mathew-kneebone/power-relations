@@ -3,7 +3,7 @@
 **poweroutage.us key**</br>
 Access to live outage data provided through poweroutage.us via REST API.
 
-#Updating the code remotely
+**Updating the code remotely**
 1. Update and upgrade:
 ```
 sudo apt-get update
