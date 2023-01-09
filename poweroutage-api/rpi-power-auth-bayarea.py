@@ -26,24 +26,45 @@ if USE_PI:
 
 
 # filename of list of cities to display
+# use command line option "--city-csv <fname.csv>" to override
 city_list_fname = '20230106_good_city_list.csv'
 
+# log file name
 fileName = 'power-relations-slash_log.txt'
 
 # use this threshold for outages
+# use command line option "-t <thresh>" to override
 thresh = 0.1
 
-
+# number of cities to print per line
+# use command line option "--n <number>" to override
 cities_per_line = 6
+
+
+#  Field width, in characters, for each city
+# use command line option "--pad <nchars>" to override
+# note this will not truncate fields so will not look pretty for n < 12!
 chars_per_city = 13
 
 # wait this many seconds between county queries so we don't jam the server
+# use command line option "--wait <seconds>" to override
 nice_wait = 1.0
 
 
+# list of county IDs in bay area, from csv downloaded from this URL
+# (California is state ID 6)
+# https://poweroutage.us/api/csv/county?key=[Api Key]&stateid=6
 
+# 2910 Alameda 	
+# 2912 Contra Costa
+# 2916 Marin
+# 2921 Napa 	
+# 2939 San Francisco
+# 2927 San Mateo
+# 2929 Santa Clara     	
+# 2931 Solano
+# 2932 Sonoma
 
-# list of IDs for the none counties in the Bay Area
 county_ids = [2910, 2912, 2916, 2921, 2939, 2927, 2929, 2931, 2932]
 
 # lists of good cities IDs and abbreviations, indexed in parallel
@@ -69,7 +90,7 @@ def query_cities(good_cities_ID, nice_wait=1.0):
         #print(cities_url)
         city_response = requests.get(cities_url)
         if nice_wait > 0.:
-            print("waiting to be nice")
+            #print("waiting to be nice")
             time.sleep(nice_wait)
         for resp_dict in city_response.json():
             #print(resp_dict)
@@ -198,15 +219,6 @@ if __name__ == '__main__':
     # remove newlines and spaces
     authkey = authkey.strip()
 
-
-    #read list of good cities, need the CityByUtilityIds and abbreviations
-    with open(city_list_fname, newline='') as csvfile:
-        citycodes = csv.reader(csvfile, delimiter=',', quotechar='|')
-        for row in citycodes:
-            good_byutilityid.append(int(row[1]))    
-            good_abbrs.append(row[6].strip())
-            #print(',-'.join(row))
-
     # Initialize colorama
     init()
 
@@ -214,6 +226,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for runtime')
     parser.add_argument('--p', help='Path to executable directory', type=str, required=False)
     parser.add_argument('--t', help='Threshold to be used', type=float, required=False)
+
+    parser.add_argument('--city-csv', help='List of cities to consider, in CSV format with CityByUtiltyId', type=str, required=False)
+
+    parser.add_argument('--n', help='Number of cities to print per line', type=int, required=False)
+
+    parser.add_argument('--wait', help='Time to wait between database queries, in seconds', type=float, required=False)
+
+    parser.add_argument('--pad', help='Pad city fields to this number of characters', type=int, required=False)
+
+
     args = parser.parse_args()
 
     # While we can't ping google
@@ -224,15 +246,40 @@ if __name__ == '__main__':
     if args.t:
         thresh = args.t
 
+    if args.wait:
+        nice_wait = args.wait
+
     if args.p:
         path = args.p
 
+    if args.city_csv:
+        city_list_fname = args.city_csv
+        
+    if args.n:
+        cities_per_line = args.n
+
+    if args.pad:
+        chars_per_city = args.pad
+        if chars_per_city < 12:
+            print("Warning on --pad: at least 12 characters needed")
+
+        
     if USE_PI:
         RELAY = 18 # BCM 18, GPIO.1 physical pin 12
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(RELAY,GPIO.OUT)
         GPIO.output(RELAY,GPIO.LOW)
 
+
+    #read list of good cities, need the CityByUtilityIds and abbreviations
+    with open(city_list_fname, newline='') as csvfile:
+        citycodes = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for row in citycodes:
+            good_byutilityid.append(int(row[1]))    
+            good_abbrs.append(row[6].strip())
+            #print(',-'.join(row))
+
+        
     try:
         while True:
 
