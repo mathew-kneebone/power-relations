@@ -306,9 +306,9 @@ if __name__ == '__main__':
             #print_and_log("\n\nCounty Outages:")
             above_threshold = print_city_data(sorted_cities, thresh)
 
-            print_and_log("\n")
+            print_and_log("\n") # forces 2 newlines
             print_customers(thresh)
-            print_and_log("\n")
+            print_and_log("") # forces a newline
 
             
             if above_threshold:
