@@ -160,16 +160,18 @@ def print_city_data(sorted_cities, thresh):
     return(above_thresh)
 
 
-def print_and_log(to_log):
+def print_and_log(to_log, end=None):
     # Print to string
-    print(to_log)
+    if end is None:
+        print(to_log)
+        end = "\n"
+    else:
+        print(to_log, end)
 
     # Format and output to log
     to_log = to_log.replace(Fore.RED, '').replace(Style.RESET_ALL, '')
     with open(fileName, 'a') as f:
-        f.write(to_log + '\n')
-
-
+        f.write(to_log + end)
 
 
 def print_customers(thresh):
@@ -181,13 +183,15 @@ def print_customers(thresh):
     response = requests.get(utl_url)    
     rj = response.json()[0]
     update_time = str(rj['LastUpdatedDateTime']).replace("T", " ")
-    now_time = time.strftime("Current Time: %H:%M:%SZ", time.gmtime())
-    update_str = "Last Updated Time (UTC): {}   {}".format(update_time, now_time)
+    update_str = "Last Updated Time (UTC): {}".format(update_time)
     
+    #print("{}".format(rj['UtilityName']))
     print_and_log("Customers: {}  Utility Outages: {}".format(total_cust, total_outs))
     print_and_log("City Outage Threshold: {:4.1f}%".format(100.0*thresh))
-    print_and_log(update_str)
-    
+    print_and_log(update_str, end = " ")
+    print_and_log(time.strftime("Current Time: %H:%M:%SZ", time.gmtime()), end=" ")
+
+
 def checkForConnection(host, portNo):
     success = True
     try:
@@ -196,8 +200,6 @@ def checkForConnection(host, portNo):
     except:
         success = False
     return success
-
-
 
 
 #### Everything happens here
@@ -240,11 +242,13 @@ if __name__ == '__main__':
     parser.add_argument('--pad', help='Pad city fields to this number of characters', type=int, required=False)
 
     parser.add_argument('--hw', dest='hw', action='store_true', help='Connect and control power hardware (default)')
+
     parser.add_argument('--no_hw', dest='hw', action='store_false', help="Don't connect to hardware")
     parser.set_defaults(hw=True)
 
     args = parser.parse_args()
 
+    
     # While we can't ping google
     while not checkForConnection('www.google.com', '80'):
         # Sleep for 5 seconds
@@ -252,14 +256,14 @@ if __name__ == '__main__':
 
     if args.t is not None:
         thresh = args.t
-
+        
     if args.wait is not None:
         nice_wait = args.wait
 
     if args.p is not None:
         path = args.p
 
-    if args.city_csv:
+    if args.city_csv is not None:
         city_list_fname = args.city_csv
         
     if args.n is not None:
@@ -289,20 +293,23 @@ if __name__ == '__main__':
         # power on on startup
         GPIO.output(RELAY_PIN, GPIO.LOW)
 
- 
+
     #read list of good cities, need the CityByUtilityIds and abbreviations
     with open(city_list_fname, newline='') as csvfile:
         citycodes = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in citycodes:
             good_byutilityid.append(int(row[1]))    
             good_abbrs.append(row[6].strip())
-            #print(',-'.join(row))
-
         
     try:
-        while True:
+        if True:
 
             sorted_cities = query_cities(good_byutilityid, nice_wait)
+
+            #for c in sorted_cities:
+            #    print(f"{c['abbr']}:{c['LastUpdatedDateTime']}")
+
+
             #print_and_log("\n\nCounty Outages:")
             above_threshold = print_city_data(sorted_cities, thresh)
 
@@ -312,14 +319,14 @@ if __name__ == '__main__':
 
             
             if above_threshold:
-                print_and_log("**POWER OFF** (ABOVE THRESHOLD)")
+                print_and_log("**POWER OFF** (ABOVE THRESHOLD)", end="")
                 if USE_HW:
                     GPIO.output(RELAY_PIN, GPIO.HIGH)
             else:
-                print_and_log("**POWER ON** (BELOW THRESHOLD)")
+                print_and_log("**POWER ON** (BELOW THRESHOLD)", end="")
                 if USE_HW:
                     GPIO.output(RELAY_PIN, GPIO.LOW)
-            sleep(300.0 - len(county_ids)*nice_wait)
+            #sleep(300.0 - len(county_ids)*nice_wait)
 
     except KeyboardInterrupt:
         print_and_log("interrupted")
