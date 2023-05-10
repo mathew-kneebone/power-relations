@@ -19,7 +19,7 @@ ls
 
 Upload file using transfer.sh:
 ```
-curl --upload-file my-file.txt https://transfer.sh/myfile.txt
+curl --upload-file ./my-file.txt https://transfer.sh/myfile.txt
 ```
 Returns a unique link, such as:
 ```
